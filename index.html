@@ -91,7 +91,7 @@ textarea{resize:vertical;min-height:56px}
   .card{box-shadow:none;border:none;border-radius:0;padding:0}
   .qdoc-wrap{max-width:100%}
 }
-#quickResults{border:1px solid #85B7EB;border-radius:8px;margin-top:6px;max-height:260px;overflow:auto} .quick-option{padding:10px 12px;cursor:pointer} .quick-option[aria-selected="true"]{background:#E6F1FB;color:#0C447C} .quick-option small{display:block;color:#777;margin-top:3px} #quickInput{min-width:0} 
+#quickResults{border:1px solid #85B7EB;border-radius:8px;margin-top:6px;max-height:260px;overflow:auto} .quick-option{padding:10px 12px;cursor:pointer} .quick-option[aria-selected="true"]{background:#E6F1FB;color:#0C447C} .quick-option small{display:block;color:#777;margin-top:3px} #quickInput{min-width:0}
 /* Touch-friendly layout; the original print layout stays intact. */
 input,select,textarea{font-size:16px;min-height:44px;max-width:100%}
 button{min-height:44px;touch-action:manipulation;font-family:inherit}
@@ -118,6 +118,20 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
  #qList>div>div:last-child{grid-column:3;grid-row:1/4}.del{min-width:32px}
 }
 @media print{.qdoc{overflow:visible}.qdoc-wrap{min-width:0}input,select,textarea{font-size:13px;min-height:0}}
+/* Flexible quote rows and company invoice. */
+[hidden]{display:none!important}
+.row-editor{margin:16px 0;padding:14px;border:1px solid #dbe5ef;border-radius:10px;background:#f8fbff}
+.row-toolbar{display:flex;gap:8px;flex-wrap:wrap}.row-toolbar button,.row-actions button{border:1px solid #ced8e3;border-radius:7px;background:white;padding:8px 12px;color:#23486a;cursor:pointer}
+.row-toolbar .primary{background:#185fa5;color:white;border-color:#185fa5}.editor-help{font-size:13px;color:#627181;line-height:1.6;margin:10px 0}
+#rowForm{border-top:1px solid #dbe5ef;margin-top:14px;padding-top:14px}#rowForm h3{font-size:15px;margin-bottom:12px}.row-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#rowFeedback{font-size:13px;color:#185fa5;margin-top:8px}
+.list-heading{font-size:12px;color:#627181;border-bottom:1px solid #ddd;padding:10px 0}
+.quote-row{display:flex;gap:12px;align-items:center;border-bottom:1px solid #e5e7eb;padding:12px 0}.row-description{flex:1;min-width:0;overflow-wrap:anywhere}.row-detail{font-size:12px;color:#667789;margin-top:5px}.row-amount{text-align:right;line-height:1.6;font-size:12px}.row-amount strong{font-size:15px;color:#174f83}.row-amount small{display:block;color:#64748b}.row-actions{display:flex;gap:4px}.row-actions button{padding:5px 9px}.row-actions button:disabled{opacity:.3;cursor:default}.quiet-row{background:#fafafa}.internal-tag{font-size:11px;color:#b42318;margin-left:8px}
+.qdoc-wrap{padding:18px 4px;max-width:780px}.qdoc h1{font-size:30px;letter-spacing:12px;margin:22px 0 42px;text-decoration:underline;text-underline-offset:10px}.invoice-header{display:grid;grid-template-columns:38% 62%;gap:0;margin-bottom:20px;align-items:stretch}.invoice-recipient{display:flex;flex-direction:column;justify-content:space-between;padding:8px 22px 8px 0}.qdoc .company-box{border:0}.qdoc .company-box td{font-size:11px;padding:7px 4px;white-space:normal!important;overflow-wrap:anywhere}.qdoc .company-box .label{background:white;font-weight:500}.qdoc .total-box{border-width:1px;margin-bottom:20px}.qdoc .total-box .th{background:white;min-width:130px}.qdoc .items-table{table-layout:fixed}.qdoc .items-table th{background:white;padding:9px 3px}.qdoc .items-table td{height:30px;padding:6px 4px;overflow-wrap:anywhere}.qdoc .items-table td.right{font-variant-numeric:tabular-nums;font-size:11px}.qdoc .items-table .section-row td{font-weight:700;background:#f7f7f7}.qdoc .items-table .blank-row td{height:30px}.qdoc .sum-row td{background:white}.final-payable{display:flex;justify-content:space-between;border-bottom:2px solid #222;padding:8px 0;font-size:14px}.internal-warning{text-align:center;color:#b42318;margin-bottom:20px}.qdoc .footer-notes{margin-top:18px;line-height:1.9}.qdoc .footer-notes .red{font-weight:400}
+@media(max-width:620px){.row-fields{grid-template-columns:1fr}.quote-row{flex-wrap:wrap}.row-actions{width:100%;justify-content:flex-end}.row-toolbar button{flex:1}.qdoc-wrap{padding:12px}.qdoc .invoice-header{grid-template-columns:38% 62%}}
+@page{size:A4 portrait;margin:12mm}
+@media print{.qdoc-wrap{min-width:0;width:100%;max-width:none;padding:0}.qdoc h1{margin:14px 0 30px}.qdoc .items-table th{padding:6px 3px}.qdoc .items-table td{height:27px;padding:4px}.qdoc .items-table tr{break-inside:avoid;page-break-inside:avoid}.qdoc thead{display:table-header-group}.qdoc tfoot{display:table-row-group}.invoice-header,.total-box,.footer-notes,.final-payable{break-inside:avoid}.qdoc .footer-notes{font-size:10px}.qdoc .items-table{font-size:11px}.qdoc .items-table td.right{font-size:10px}}
+
 </style>
 </head>
 <body>
@@ -264,7 +278,27 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
           <button class="pbtn" onclick="go('con')" style="font-size:12px;padding:6px 12px">소비자용 →</button>
         </div>
       </div>
-      <div id="qList"></div>
+      <section class="row-editor no-print" aria-label="견적 행 편집">
+  <div class="row-toolbar"><button type="button" onclick="openRow('item')">+ 직접 입력 항목</button><button type="button" onclick="openRow('note')">+ 날짜 / 현장명</button><button type="button" onclick="insertBlank()">+ 빈 행</button></div>
+  <p class="editor-help">AS 비용·철거비 등은 직접 입력하세요. 날짜·현장명과 빈 행은 금액 없이 출력됩니다. 목록에서 수정하거나 순서를 바꿀 수 있습니다.</p>
+  <form id="rowForm" hidden onsubmit="saveRow(event)">
+    <h3 id="rowTitle">직접 입력 항목</h3>
+    <div class="row-fields">
+      <div><label for="rowName" id="rowNameLabel">품명</label><input id="rowName" required maxlength="160" placeholder="예: AS 비용"></div>
+      <div class="money-field"><label for="rowSpec">규격</label><input id="rowSpec" maxlength="160" placeholder="예: 방문 수리 1회"></div>
+      <div class="money-field"><label for="rowQty">수량</label><input id="rowQty" type="number" min="0.001" step="any" value="1" required></div>
+      <div class="money-field"><label for="rowUnit">판매 단가 (부가세 별도)</label><input id="rowUnit" type="number" min="0" step="any" value="0" required></div>
+      <div class="money-field"><label for="rowCost">원가 합계 (내부용)</label><input id="rowCost" type="number" min="0" step="1" value="0" required></div>
+      <div class="money-field"><label for="rowMemo">비고</label><input id="rowMemo" maxlength="160" placeholder="예: 출장비 포함"></div>
+      <div class="money-field"><label for="rowScope">표시할 견적서</label><select id="rowScope"><option value="public">소비자용 + 내부용</option><option value="internal">내부용만</option></select></div>
+    </div>
+    <p id="rowEstimate" class="editor-help" aria-live="polite"></p>
+    <div class="row-toolbar"><button type="submit" class="primary" id="rowSave">추가</button><button type="button" onclick="closeRow()">취소</button></div>
+  </form>
+  <p id="rowFeedback" role="status"></p>
+</section>
+
+<div id="qList"></div>
       <div id="qEmpty" style="padding:20px;text-align:center;font-size:13px;color:#aaa">항목을 추가하면 표시됩니다</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:10px">
         <div class="sbox"><div class="sl">총 원가</div><div class="sv" id="sC">0원</div></div>
@@ -293,12 +327,12 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
     <div class="card no-print">
       <div class="sec">견적서 정보</div>
       <div class="g2" style="margin-bottom:8px">
-        <div><label>고객명 / 업체명</label><input type="text" id="cliN" placeholder="사랑발 교회" oninput="renderCon()"></div>
+        <div><label>고객명 / 업체명</label><input type="text" id="cliN" placeholder="고객명 / 업체명 입력" oninput="renderCon()"></div>
         <div><label>견적일자</label><input type="date" id="cliDate" oninput="renderCon()"></div>
       </div>
       <div class="g2" style="margin-bottom:8px">
-        <div><label>견적 번호 (NO)</label><input type="text" id="cliNo" placeholder="2025-001" oninput="renderCon()"></div>
-        <div><label>절삭 금액 (원, 있을 경우)</label><input type="number" id="cliDisc" value="0" oninput="renderCon()"></div>
+        <div><label>견적 번호 (NO)</label><input type="text" id="cliNo" placeholder="예: 2026-001" oninput="renderCon()"></div>
+        <div><label>절삭 금액 (최종 합계에서 차감)</label><input type="number" id="cliDisc" min="0" step="1" value="0" oninput="renderCon();updSum();renderInt()"></div>
       </div>
     </div>
     <div class="card">
@@ -657,82 +691,81 @@ function addLabor(){
   renderList();
 }
 
-function rmItem(id){items=items.filter(i=>i.id!==id);renderList();}
 
+
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isSpacer = it => it.kind==='note'||it.kind==='blank';
+const rowTax = it => isSpacer(it)?0:Math.round(it.fin*.1);
+function quoteTotals(){
+  const pub=items.filter(i=>!i.isLabor&&!isSpacer(i));
+  const sup=pub.reduce((s,i)=>s+i.fin,0),vat=pub.reduce((s,i)=>s+rowTax(i),0);
+  const requested=Math.max(0,Math.round(Number(document.getElementById('cliDisc').value)||0));
+  const discount=Math.min(requested,sup+vat);
+  return {sup,vat,discount,grand:sup+vat-discount};
+}
+let editingRow=null,rowKind='item';
+function openRow(kind,id=null){
+  const it=id===null?null:items.find(x=>x.id===id); if(id!==null&&!it)return;
+  editingRow=id;rowKind=kind;
+  document.getElementById('rowForm').hidden=false;
+  document.getElementById('rowTitle').textContent=(id===null?'추가: ':'수정: ')+(kind==='note'?'날짜 / 현장명':'직접 입력 항목');
+  document.getElementById('rowNameLabel').textContent=kind==='note'?'날짜 / 현장명 / 구분 제목':'품명';
+  document.getElementById('rowName').placeholder=kind==='note'?'예: 26.10.05 / 1층 출입구':'예: AS 비용';
+  document.querySelectorAll('.money-field').forEach(el=>{el.hidden=kind==='note';el.querySelectorAll('input,select').forEach(input=>input.disabled=kind==='note');});
+  const values={rowName:it?.name||'',rowSpec:it?.spec||'',rowQty:it?.qty||1,rowUnit:it?(it.unitPrice??it.fin/it.qty):0,rowCost:it?.ct||0,rowMemo:it?.memo||'',rowScope:it?.isLabor?'internal':'public'};
+  Object.entries(values).forEach(([key,value])=>document.getElementById(key).value=value);
+  document.getElementById('rowSave').textContent=id===null?'추가':'수정 저장';
+  document.getElementById('rowFeedback').textContent='';updateRowEstimate();
+  document.getElementById('rowForm').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('rowName').focus();
+}
+function closeRow(){document.getElementById('rowForm').hidden=true;editingRow=null;}
+function updateRowEstimate(){
+  const qty=Number(document.getElementById('rowQty').value),unit=Number(document.getElementById('rowUnit').value);
+  document.getElementById('rowEstimate').textContent=rowKind==='note'?'금액·수량 없이 품명 칸에 표시됩니다.':`공급가액 ${fmt(qty*unit)}원 · 부가세 ${fmt(Math.round(qty*unit)*.1)}원`;
+}
+function saveRow(event){
+  event.preventDefault();const name=document.getElementById('rowName').value.trim();if(!name)return;
+  const old=items.find(x=>x.id===editingRow);
+  if(editingRow!==null&&!old){closeRow();return;}
+  let next={id:old?old.id:++qid,kind:rowKind,name,spec:'',memo:'',qty:0,ct:0,st:0,fin:0,pp:0,isLabor:false,isCrane:false};
+  if(rowKind==='item'){
+    const qty=Number(document.getElementById('rowQty').value),unit=Number(document.getElementById('rowUnit').value),ct=Number(document.getElementById('rowCost').value);
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(unit)||unit<0||!Number.isFinite(ct)||ct<0){document.getElementById('rowFeedback').textContent='수량은 0보다 크게, 금액은 0 이상으로 입력하세요.';return;}
+    // Preserve the original exact total when only text/notes are edited.
+    const unchanged=old&&qty===old.qty&&unit===(old.unitPrice??old.fin/old.qty);
+    const fin=unchanged?old.fin:Math.round(qty*unit);
+    if(!Number.isSafeInteger(fin)||!Number.isSafeInteger(Math.round(ct))){document.getElementById('rowFeedback').textContent='금액이 너무 큽니다.';return;}
+    next={...next,qty,unitPrice:unit,ct:Math.round(ct),st:fin,fin,pp:fin?Math.round((fin-ct)/fin*100):0,spec:document.getElementById('rowSpec').value.trim(),memo:document.getElementById('rowMemo').value.trim(),isLabor:document.getElementById('rowScope').value==='internal',isCrane:old?.isCrane||false};
+  }
+  if(old)items[items.indexOf(old)]=next;else items.push(next);
+  closeRow();renderList();document.getElementById('rowFeedback').textContent=old?'수정했습니다.':'추가했습니다. 목록에서 순서를 바꿀 수 있습니다.';
+}
+function insertBlank(){items.push({id:++qid,kind:'blank',name:'',spec:'',qty:0,ct:0,st:0,fin:0,pp:0,isLabor:false});renderList();document.getElementById('rowFeedback').textContent='빈 행을 추가했습니다. 위·아래 버튼으로 위치를 옮기세요.';}
+function moveRow(id,delta){const i=items.findIndex(x=>x.id===id),j=i+delta;if(i<0||j<0||j>=items.length)return;[items[i],items[j]]=[items[j],items[i]];renderList();}
+function rmItem(id){if(editingRow===id)closeRow();items=items.filter(i=>i.id!==id);renderList();}
 function renderList(){
-  const el=document.getElementById('qList'),em=document.getElementById('qEmpty');
-  if(!items.length){el.innerHTML='';em.style.display='block';updSum();return}
-  em.style.display='none';
-  el.innerHTML=`<div style="display:grid;grid-template-columns:2.5fr 0.5fr 0.7fr 0.9fr 0.9fr auto;gap:6px;padding:5px 0;border-bottom:1px solid #eee">
-    <div style="font-size:10px;color:#aaa">항목</div><div style="font-size:10px;color:#aaa">규격</div>
-    <div style="font-size:10px;color:#aaa;text-align:center">수량</div>
-    <div style="font-size:10px;color:#aaa;text-align:right">원가</div>
-    <div style="font-size:10px;color:#aaa;text-align:right">견적가</div><div></div></div>`+
-  items.map(it=>`<div style="display:grid;grid-template-columns:2.5fr 0.5fr 0.7fr 0.9fr 0.9fr auto;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid #eee;font-size:13px">
-    <div><div style="font-weight:600">${it.name}${it.isLabor?'<span style="font-size:10px;color:#c00;margin-left:4px">[내부]</span>':''}</div></div>
-    <div style="font-size:11px;color:#888">${it.spec}</div>
-    <div style="text-align:center">${it.qty}</div>
-    <div style="text-align:right;color:#888">${fmt(it.ct)}원</div>
-    <div style="text-align:right;font-weight:700;color:${it.isLabor?'#c00':'#0C447C'}">${fmt(it.fin)}원</div>
-    <div><button class="del" onclick="rmItem(${it.id})">×</button></div>
-  </div>`).join('');
-  updSum();
+  const el=document.getElementById('qList');document.getElementById('qEmpty').style.display=items.length?'none':'block';
+  el.innerHTML=items.length?'<div class="list-heading">출력 순서 · 항목</div>'+items.map((it,index)=>`<article class="quote-row ${isSpacer(it)?'quiet-row':''}">
+    <div class="row-description"><strong>${it.kind==='blank'?'빈 행 (내용 없이 출력)':esc(it.name)}</strong>${it.isLabor?'<span class="internal-tag">내부용만</span>':''}<div class="row-detail">${isSpacer(it)?(it.kind==='note'?'날짜 / 현장명 · 금액 없음':'여백'):esc(it.spec)+(it.memo?' · '+esc(it.memo):'')}</div></div>
+    ${isSpacer(it)?'':`<div class="row-amount">${esc(it.qty)} × ${fmt(it.unitPrice??it.fin/it.qty)}원<br><strong>${fmt(it.fin)}원</strong><small>원가 ${fmt(it.ct)}원</small></div>`}
+    <div class="row-actions"><button type="button" aria-label="${index+1}행 위로" onclick="moveRow(${it.id},-1)" ${index===0?'disabled':''}>↑</button><button type="button" aria-label="${index+1}행 아래로" onclick="moveRow(${it.id},1)" ${index===items.length-1?'disabled':''}>↓</button>${it.kind==='blank'?'':`<button type="button" onclick="openRow('${it.kind==='note'?'note':'item'}',${it.id})">수정</button>`}<button type="button" aria-label="${index+1}행 삭제" onclick="rmItem(${it.id})">삭제</button></div></article>`).join(''):'';
+  updSum();renderInt();renderCon();
 }
-
 function updSum(){
-  const tc=items.reduce((s,i)=>s+i.ct,0);
-  const pub=items.filter(i=>!i.isLabor);
-  const sup=pub.reduce((s,i)=>s+i.fin,0);
-  const vat=sup*.1,grand=sup+vat;
-  const nc=pub.filter(i=>!i.isCrane);
-  const ap=nc.reduce((s,i)=>s+i.fin,0)>0?Math.round((nc.reduce((s,i)=>s+i.fin-i.ct,0))/nc.reduce((s,i)=>s+i.fin,0)*100):0;
-  document.getElementById('sC').textContent=fmt(tc)+'원';
-  document.getElementById('sSup').textContent=fmt(sup)+'원';
-  document.getElementById('sV').textContent=fmt(vat)+'원';
-  document.getElementById('sG').textContent=fmt(grand)+'원';
-  document.getElementById('sPct').textContent=ap+'%';
+  const t=quoteTotals(),tc=items.reduce((s,i)=>s+i.ct,0),nc=items.filter(i=>!i.isLabor&&!i.isCrane&&!isSpacer(i));
+  const sales=nc.reduce((s,i)=>s+i.fin,0),cost=nc.reduce((s,i)=>s+i.ct,0);
+  Object.entries({sC:fmt(tc)+'원',sSup:fmt(t.sup)+'원',sV:fmt(t.vat)+'원',sG:fmt(t.grand)+'원',sPct:(sales?Math.round((sales-cost)/sales*100):0)+'%'}).forEach(([id,value])=>document.getElementById(id).textContent=value);
 }
-
-/* ===== 내부용 ===== */
+function documentRow(it,internal=false){
+  if(isSpacer(it))return `<tr class="${it.kind==='note'?'section-row':'blank-row'}"><td class="left">${esc(it.name)}</td>${'<td></td>'.repeat(6)}</tr>`;
+  if(internal)return `<tr><td class="left">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.ct)}</td><td>${it.isLabor?'내부용':it.isCrane?'—':it.pp+'%'}</td><td class="right">${fmt(it.fin)}</td><td>${esc(it.memo||'')}</td></tr>`;
+  return `<tr><td class="left">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.unitPrice??it.fin/it.qty)}</td><td class="right">${fmt(it.fin)}</td><td class="right">${fmt(rowTax(it))}</td><td>${esc(it.memo||'')}</td></tr>`;
+}
 function renderInt(){
-  const el=document.getElementById('dInt');
-  if(!items.length){el.innerHTML='<div style="padding:2rem;text-align:center;color:#aaa">견적 계산 탭에서 먼저 항목을 추가하세요</div>';return;}
-  const pub=items.filter(i=>!i.isLabor);
-  const sup=pub.reduce((s,i)=>s+i.fin,0);
-  const vat=sup*.1,grand=sup+vat;
-  const tc=items.reduce((s,i)=>s+i.ct,0);
-  const today=new Date().toLocaleDateString('ko-KR');
-  el.innerHTML=`<div style="text-align:center;margin-bottom:1.5rem">
-    <div style="font-size:20px;font-weight:700;letter-spacing:4px">내부 원가 견적서</div>
-    <div style="font-size:11px;color:#c00;margin-top:4px;font-weight:600">※ 원가 포함 내부 자료 — 외부 배포 금지</div>
-    <div style="font-size:12px;color:#888;margin-top:4px">작성일: ${today}</div>
-  </div>
-  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
-    <thead><tr>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0;text-align:left">품명</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">규격</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">수량</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">원가</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">이익률</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">견적가</th>
-      <th style="border:1px solid #000;padding:6px;background:#f0f0f0">비고</th>
-    </tr></thead>
-    <tbody>${items.map(it=>`<tr>
-      <td style="border:1px solid #000;padding:5px 6px">${it.name}</td>
-      <td style="border:1px solid #000;padding:5px 6px;text-align:center">${it.spec}</td>
-      <td style="border:1px solid #000;padding:5px 6px;text-align:center">${it.qty}</td>
-      <td style="border:1px solid #000;padding:5px 6px;text-align:right">${fmt(it.ct)}원</td>
-      <td style="border:1px solid #000;padding:5px 6px;text-align:center;color:${it.isLabor?'#c00':it.isCrane?'#aaa':'#0F6E56'};font-weight:600">${it.isLabor?'[인건비]':it.isCrane?'—':it.pp+'%'}</td>
-      <td style="border:1px solid #000;padding:5px 6px;text-align:right;font-weight:600">${fmt(it.fin)}원</td>
-      <td style="border:1px solid #000;padding:5px 6px">${it.isLabor?'내부전용':''}</td>
-    </tr>`).join('')}</tbody>
-    <tfoot>
-      <tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:right;font-weight:700;background:#f0f0f0">합 계</td>
-      <td style="border:1px solid #000;padding:6px;text-align:right;font-weight:700">${fmt(sup)}원</td>
-      <td style="border:1px solid #000;padding:6px"></td></tr>
-    </tfoot>
-  </table>`;
+  const t=quoteTotals();document.getElementById('dInt').innerHTML=`<div class="qdoc-wrap"><h1>내부 원가 견적서</h1><p class="internal-warning">원가 포함 내부 자료 · 외부 배포 금지</p><table class="items-table"><thead><tr>${['품명','규격','수량','원가','이익률','견적가','비고'].map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${items.map(it=>documentRow(it,true)).join('')}</tbody></table><p>원가 합계 ${fmt(items.reduce((s,i)=>s+i.ct,0))}원 · 소비자 공급가액 ${fmt(t.sup)}원 · 세액 ${fmt(t.vat)}원</p><p>절삭 ${fmt(t.discount)}원 · 최종 합계 ${fmt(t.grand)}원</p></div>`;
 }
+document.getElementById('rowForm').addEventListener('input',updateRowEstimate);
 
 /* ===== 소비자 견적서 (실제 양식) ===== */
 function renderCon(){
@@ -740,35 +773,30 @@ function renderCon(){
   const pubItems=items.filter(i=>!i.isLabor);
   if(!pubItems.length){el.innerHTML='<div style="padding:2rem;text-align:center;color:#aaa">견적 계산 탭에서 먼저 항목을 추가하세요</div>';return;}
 
-  const cliN=document.getElementById('cliN').value||'';
-  const cliNo=document.getElementById('cliNo').value||'';
-  const disc=parseFloat(document.getElementById('cliDisc').value)||0;
+  const cliN=esc(document.getElementById('cliN').value||'');
+  const cliNo=esc(document.getElementById('cliNo').value||'');
 
   const dateVal=document.getElementById('cliDate').value;
   let dateStr='';
   if(dateVal){const d=new Date(dateVal);dateStr=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
   else{const d=new Date();dateStr=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
 
-  const sup=pubItems.reduce((s,i)=>s+i.fin,0);
-  const vat=Math.round(sup*.1);
-  const vatDisc=disc>0?Math.round(disc/11):0; // 절삭이 세액에서
-  const supFinal=sup;
-  const vatFinal=vat-vatDisc;
-  const grand=supFinal+vatFinal;
-
+  const totals=quoteTotals();
+  const supFinal=totals.sup,vatFinal=totals.vat,grand=totals.grand;
+  const actualDiscount=totals.discount;
   // 한글 금액
   const grandKor=numToKor(grand);
 
   // 빈 줄 (총 15행 - 실제 항목 수)
-  const totalRows=15;
-  const emptyRows=Math.max(0,totalRows-pubItems.length-(disc>0?1:0));
+  const totalRows=18;
+  const emptyRows=Math.max(0,totalRows-pubItems.length-(actualDiscount>0?1:0));
 
   el.innerHTML=`<div class="qdoc-wrap">
     ${cliNo?`<div style="font-size:12px;margin-bottom:4px">NO ${cliNo}</div>`:'<div style="font-size:12px;margin-bottom:4px">NO _______________</div>'}
     <h1>견 적 서</h1>
 
-    <div style="display:flex;gap:0;margin-bottom:12px;align-items:flex-start">
-      <div style="min-width:160px;padding-right:20px;flex-shrink:0">
+    <div class="invoice-header">
+      <div class="invoice-recipient">
         <div style="margin-bottom:8px">${dateStr}</div>
         <table style="border-collapse:collapse;font-size:13px">
           <tr>
@@ -788,15 +816,15 @@ function renderCon(){
             <td class="label" style="white-space:nowrap">상 &nbsp;&nbsp;&nbsp; 호</td>
             <td style="white-space:nowrap">간판공방</td>
             <td class="label" style="white-space:nowrap;width:40px">성 &nbsp; 명</td>
-            <td style="white-space:nowrap">최현호 <span style="color:#c00;font-size:10px">㊞</span></td>
+            <td style="white-space:nowrap">최현호 <span style="color:#c00;font-size:10px">(인)</span></td>
           </tr>
           <tr>
             <td class="label" style="white-space:nowrap">사업장주소</td>
-            <td colspan="3" style="font-size:11px;white-space:nowrap">인천 서구 원당대로 852, 3층 301호</td>
+            <td colspan="3" style="font-size:11px;white-space:nowrap">인천 서구 원당대로 865 대신프라자 5층 509-9호</td>
           </tr>
           <tr>
             <td class="label" style="white-space:nowrap">업 &nbsp;&nbsp;&nbsp; 태</td>
-            <td style="font-size:11px;white-space:nowrap">과학 기술서비스</td>
+            <td style="font-size:11px;white-space:nowrap">전문, 과학 및 기술서비스업</td>
             <td class="label" style="white-space:nowrap">종 &nbsp; 목</td>
             <td style="font-size:11px;white-space:nowrap">옥외 및 전시 광고업</td>
           </tr>
@@ -829,24 +857,8 @@ function renderCon(){
         </tr>
       </thead>
       <tbody>
-        ${pubItems.map(it=>{
-          const vat2=Math.round(it.fin*0.1);
-          return `<tr>
-            <td class="left" style="padding-left:8px">${it.name}</td>
-            <td>${it.spec}</td>
-            <td>${it.qty}</td>
-            <td class="right">${fmt(Math.round(it.fin/it.qty))}</td>
-            <td class="right">${fmt(it.fin)}</td>
-            <td class="right">${fmt(vat2)}</td>
-            <td></td>
-          </tr>`;
-        }).join('')}
-        ${disc>0?`<tr>
-          <td class="left" style="padding-left:8px">절삭</td>
-          <td></td><td>1</td><td></td><td></td>
-          <td class="right" style="color:#c00">-${fmt(vatDisc)}</td>
-          <td></td>
-        </tr>`:''}
+        ${pubItems.map(it=>documentRow(it)).join('')}
+        ${actualDiscount>0?`<tr><td class="left">절삭</td><td colspan="5">최종 합계에서 차감</td><td class="right">-${fmt(actualDiscount)}</td></tr>`:''}
         ${'<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(emptyRows)}
       </tbody>
       <tfoot>
@@ -855,11 +867,12 @@ function renderCon(){
           <td></td>
           <td class="right">${fmt(supFinal)}</td>
           <td class="right">${fmt(vatFinal)}</td>
-          <td></td>
+          <td>${actualDiscount?'절삭 -'+fmt(actualDiscount):''}</td>
         </tr>
       </tfoot>
     </table>
 
+    <div class="final-payable">최종 합계 (부가세 포함) <strong>${fmt(grand)}원</strong></div>
     <div class="footer-notes">
       <div>1. 견적금액은 부가가치세(VAT) 포함 금액입니다.</div>
       <div>2. 견적유효기간: 30일</div>
