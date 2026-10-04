@@ -424,7 +424,7 @@ let items=[],qid=0,cp={};
 
 // 오늘 날짜 기본값
 document.addEventListener('DOMContentLoaded',()=>{
-  const today=new Date().toISOString().slice(0,10);
+  const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
   const el=document.getElementById('cliDate');
   if(el) el.value=today;
 });
@@ -778,7 +778,7 @@ function renderCon(){
 
   const dateVal=document.getElementById('cliDate').value;
   let dateStr='';
-  if(dateVal){const d=new Date(dateVal);dateStr=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
+  if(dateVal){const [y,m,d]=dateVal.split('-');dateStr=`${y}년 ${Number(m)}월 ${Number(d)}일`;}
   else{const d=new Date();dateStr=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
 
   const totals=quoteTotals();
@@ -839,7 +839,7 @@ function renderCon(){
     </div>
 
     <div class="total-box">
-      <div class="th">합 계 금 액<br><span style="font-size:11px;font-weight:400">(공급가액 + 세액)</span></div>
+      <div class="th">합 계 금 액<br><span style="font-size:11px;font-weight:400">(부가세 포함${actualDiscount?' · 절삭 반영':''})</span></div>
       <div class="td">일금 &nbsp; ${grandKor} 원정</div>
       <div class="amt">(₩ &nbsp; ${fmt(grand)})</div>
     </div>
