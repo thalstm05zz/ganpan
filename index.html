@@ -339,7 +339,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
     <section class="card no-print" aria-label="소비자 견적서 빈 행 조절">
       <div class="sec">빈 행 조절</div>
       <label for="bottomBlankInput">견적서 아래쪽 빈 행 수</label>
-      <div class="blank-toolbar"><button type="button" onclick="changeBottomBlanks(-1)" aria-label="아래쪽 빈 행 줄이기">−</button><input id="bottomBlankInput" type="number" min="0" max="100" step="1" value="0" onchange="setBottomBlanks(this.value)"><button type="button" onclick="changeBottomBlanks(1)" aria-label="아래쪽 빈 행 늘리기">+</button><button type="button" onclick="setBottomBlanks(0)">아래 여백 없애기</button><button type="button" onclick="setBottomBlanks(null)">자동 맞춤</button></div>
+      <div class="blank-toolbar"><button type="button" onclick="changeBottomBlanks(-1)" aria-label="아래쪽 빈 행 줄이기">−</button><input id="bottomBlankInput" type="number" min="0" max="100" step="1" value="0" oninput="if(this.value!=='' )setBottomBlanks(this.value)" onchange="setBottomBlanks(this.value)"><button type="button" onclick="changeBottomBlanks(1)" aria-label="아래쪽 빈 행 늘리기">+</button><button type="button" onclick="setBottomBlanks(0)">아래 여백 없애기</button><button type="button" onclick="setBottomBlanks(null)">자동 맞춤</button></div>
       <p id="blankCountHelp" class="editor-help" role="status"></p>
       <details><summary>항목 사이 빈 행 편집</summary><p class="editor-help">원하는 항목 아래에 빈 행을 넣거나, 이미 넣은 빈 행을 삭제하세요. 날짜·현장명과 금액은 유지됩니다.</p><div id="consumerBlankRows"></div></details>
     </section>
