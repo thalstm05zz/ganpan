@@ -155,8 +155,8 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
       <label for="quickInput">재료명 또는 재료명 + 규격 + 수량</label>
       <div style="display:flex;gap:8px"><input id="quickInput" role="combobox" aria-autocomplete="list" aria-controls="quickResults" aria-expanded="false" autocomplete="off" placeholder="예: 시트 1000×500 2장"><button type="button" class="sbtn" id="quickApply" style="white-space:nowrap">적용</button></div>
       <div id="quickResults" role="listbox" aria-label="재료 검색 결과" hidden></div>
-      <div id="quickStatus" role="status" style="font-size:12px;color:#185FA5;margin:8px 0;line-height:1.6">재료명 일부 입력 → ↑↓ 선택 → Enter 적용. 규격을 확인한 뒤 목록에 추가하세요.</div>
-      <details style="font-size:12px;color:#666;margin-bottom:14px"><summary style="cursor:pointer">한 줄 입력 예시 / 단위 안내</summary><div style="line-height:1.9;padding:8px 0">시트 1000×500 2장 · 갈바 1200×600 1개<br>LED채널글자 30cm 5개 · 고무스카시 100mm 3개 · 채널 보조바 2m 3개 · 트러스바 3500mm 2개<br>가로×세로·길이·고무스카시는 기본 mm, 채널글자 높이는 기본 cm입니다. 수량은 생략하면 1입니다.<br>크레인과 인건비는 이름으로 선택한 뒤 아래에서 종류·단가를 선택하세요.</div></details>
+      <div id="quickStatus" role="status" style="font-size:12px;color:#185FA5;margin:8px 0;line-height:1.6">예: 채널글자 50 5 → 높이 50cm · 5개. ↑↓ 선택 후 Enter 또는 적용을 누르세요.</div>
+      <details style="font-size:12px;color:#666;margin-bottom:14px"><summary style="cursor:pointer">한 줄 입력 예시 / 단위 안내</summary><div style="line-height:1.9;padding:8px 0">시트 1000×500 2장 · 갈바 1200×600 1개<br>채널글자 50 5 → 50cm · 5개<br>트러스바 3500 2 → 3500mm · 2개<br>시트 1000×500 2 → 1000×500mm · 2장<br>단위를 적어도 됩니다: 채널글자 50cm 5개 · 고무스카시 100mm 3개 · 채널 보조바 2m 3개<br>가로×세로·길이·고무스카시는 기본 mm, 채널글자 높이는 기본 cm입니다. 수량은 생략하면 1입니다.<br>크레인과 인건비는 이름으로 선택한 뒤 아래에서 종류·단가를 선택하세요.</div></details>
       <div id="matGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px"></div>
     </div>
 
@@ -1020,6 +1020,13 @@ function quickParse(m,detail){
   let rest=detail.toLowerCase().replace(/,/g,'').trim(),qty=1,values={};
   const q=rest.match(/(?:^|\s)(\d+)\s*(장|개|글자|인|명|회)\s*$/);
   if(q){qty=Number(q[1]);rest=rest.slice(0,q.index).trim();}
+  else if(['ch','bar','gomu','fix','sqm','galva'].includes(m.type)){
+    // A final number after a specification is a quantity; a lone number stays a size.
+    const bare=rest.match(/^(.*\S)\s+(\d+(?:\.\d+)?)$/);
+    const numberUnit='\\d+(?:\\.\\d+)?\\s*(?:mm|cm|m)?';
+    const shape=new RegExp('^'+numberUnit+(['sqm','galva'].includes(m.type)?'\\s*[x×*]\\s*'+numberUnit:'')+'$');
+    if(bare&&shape.test(bare[1].trim())){qty=Number(bare[2]);rest=bare[1].trim();}
+  }
   if(!Number.isSafeInteger(qty)||qty<1)throw Error('수량은 1 이상의 정수로 입력하세요.');
   const length=(v,u,base)=>Number(v)*(u==='m'?1000:u==='cm'?10:u==='mm'?1:base);
   const scalar=/^(\d+(?:\.\d+)?)\s*(mm|cm|m)?$/;
