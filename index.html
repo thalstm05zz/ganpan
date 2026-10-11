@@ -133,6 +133,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
 @media print{.qdoc-wrap{min-width:0;width:100%;max-width:none;padding:0}.qdoc h1{margin:14px 0 30px}.qdoc .items-table th{padding:6px 3px}.qdoc .items-table td{height:27px;padding:4px}.qdoc .items-table tr{break-inside:avoid;page-break-inside:avoid}.qdoc thead{display:table-header-group}.qdoc tfoot{display:table-row-group}.invoice-header,.total-box,.footer-notes,.final-payable{break-inside:avoid}.qdoc .footer-notes{font-size:10px}.qdoc .items-table{font-size:11px}.qdoc .items-table td.right{font-size:10px}}
 
 .blank-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.blank-toolbar input{width:80px;text-align:center}.blank-toolbar button,#consumerBlankRows button{border:1px solid #ced8e3;border-radius:7px;background:#fff;padding:8px 12px;cursor:pointer;color:#23486a}.blank-edit-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e5e7eb}.blank-edit-row>span{overflow-wrap:anywhere;min-width:0}.blank-edit-row>div{display:flex;gap:6px;flex-shrink:0}#consumerBlankRows{margin-top:12px}details summary{cursor:pointer;padding:8px 0}@media(max-width:620px){.blank-edit-row{align-items:flex-start;flex-direction:column}.blank-toolbar{gap:6px}.blank-toolbar button{padding:8px 10px}}
+.qdoc .items-table td.item-name{text-align:center}
 </style>
 </head>
 <body>
@@ -155,7 +156,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
       <div style="display:flex;gap:8px"><input id="quickInput" role="combobox" aria-autocomplete="list" aria-controls="quickResults" aria-expanded="false" autocomplete="off" placeholder="예: 시트 1000×500 2장"><button type="button" class="sbtn" id="quickApply" style="white-space:nowrap">적용</button></div>
       <div id="quickResults" role="listbox" aria-label="재료 검색 결과" hidden></div>
       <div id="quickStatus" role="status" style="font-size:12px;color:#185FA5;margin:8px 0;line-height:1.6">재료명 일부 입력 → ↑↓ 선택 → Enter 적용. 규격을 확인한 뒤 목록에 추가하세요.</div>
-      <details style="font-size:12px;color:#666;margin-bottom:14px"><summary style="cursor:pointer">한 줄 입력 예시 / 단위 안내</summary><div style="line-height:1.9;padding:8px 0">시트 1000×500 2장 · 갈바 1200×600 1개<br>LED채널글자 30cm 5개 · 고무스카시 100mm 3개 · 채널 보조바 2m 3개 · 트러스바 2개<br>가로×세로·길이·고무스카시는 기본 mm, 채널글자 높이는 기본 cm입니다. 수량은 생략하면 1입니다.<br>크레인과 인건비는 이름으로 선택한 뒤 아래에서 종류·단가를 선택하세요.</div></details>
+      <details style="font-size:12px;color:#666;margin-bottom:14px"><summary style="cursor:pointer">한 줄 입력 예시 / 단위 안내</summary><div style="line-height:1.9;padding:8px 0">시트 1000×500 2장 · 갈바 1200×600 1개<br>LED채널글자 30cm 5개 · 고무스카시 100mm 3개 · 채널 보조바 2m 3개 · 트러스바 3500mm 2개<br>가로×세로·길이·고무스카시는 기본 mm, 채널글자 높이는 기본 cm입니다. 수량은 생략하면 1입니다.<br>크레인과 인건비는 이름으로 선택한 뒤 아래에서 종류·단가를 선택하세요.</div></details>
       <div id="matGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px"></div>
     </div>
 
@@ -166,10 +167,11 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
 
       <div id="secCh" style="display:none">
         <div class="g2" style="margin-bottom:6px;max-width:320px">
-          <div><label>글자 높이 (cm)</label><input type="number" id="chH" value="30" min="1" step="0.1" oninput="calcCh()"></div>
+          <div><label>글자 높이 (cm)</label><input type="number" id="chH" value="30" min="1" step="0.1" oninput="resetChannelPrice()"></div>
           <div><label>수량</label><input type="number" id="chQty" value="1" min="1" oninput="calcCh()"></div>
         </div>
         <div id="chResult" class="info-box" style="display:none;margin-bottom:4px"></div>
+        <div style="margin:12px 0"><label for="chSellUnit">소비자 견적 단가 (글자 1개당 · 부가세 별도)</label><div style="display:flex;gap:8px;max-width:440px"><input id="chSellUnit" type="number" min="0" step="1" placeholder="기준 단가 자동 적용" oninput="calcCh()"><button type="button" class="sbtn" style="white-space:nowrap" onclick="resetChannelPrice()">기준가로 복원</button></div><p class="editor-help">직접 입력하면 수량에 맞춰 견적가가 계산됩니다. 높이를 바꾸거나 재료를 다시 선택하면 기준가로 돌아갑니다.</p></div>
       </div>
 
       <div id="secGomu" style="display:none">
@@ -191,7 +193,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
         </div>
       </div>
 
-      <div id="secFix" style="display:none">
+      <div id="secFix" style="display:none"><div style="max-width:320px;margin-bottom:8px"><label for="fixLen">트러스바 길이 (mm)</label><input type="number" id="fixLen" value="1000" min="1" step="1" oninput="calcFix()"><p class="editor-help">3500 → 3.5m, 7200 → 7.2m. 길이를 올림하지 않고 계산합니다.</p></div>
         <div style="max-width:160px;margin-bottom:4px"><label>수량</label><input type="number" id="fixQty" value="1" min="1" oninput="calcFix()"></div>
       </div>
 
@@ -456,7 +458,7 @@ function renderMats(){
 function matLabel(m){
   if(m.type==='ch')    return `높이 자동각수 ×${m.sellMulti}배`;
   if(m.type==='sqm')   return m.isSheet?'헤베 올림 계산':`${fmt(m.cSqm)}→${fmt(m.sSqm)}원/㎡`;
-  if(m.type==='fix')   return `${fmt(m.cFix)}→${fmt(m.sFix)}원/개`;
+  if(m.type==='fix')   return `${fmt(m.cFix)}→${fmt(m.sFix)}원/m · 길이 계산`;
   if(m.type==='galva') return '1,000mm 조건부';
   if(m.type==='gomu')  return `규격별 ×${m.sM}배`;
   if(m.type==='crane') return '시간/반나절/하루';
@@ -466,6 +468,7 @@ function matLabel(m){
 }
 
 function selMat(i){
+  document.getElementById('chSellUnit').value='';
   cp={};resetResult();document.getElementById('iSpec').value='';
   si=i;sz=null;craneIdx=null;laborIdx=null;stamp=0;
   renderMats();
@@ -582,6 +585,7 @@ function calcLabor(){
   cp={ct:total,st:total,fin,pp:0,label:`시공인건비 × ${qty}인`,qty,isLabor:false};
 }
 
+function resetChannelPrice(){document.getElementById('chSellUnit').value='';calcCh();}
 function calcCh(){
   if(si===null)return;
   const m=mats[si];
@@ -593,7 +597,13 @@ function calcCh(){
   const el=document.getElementById('chResult');
   el.style.display='block';
   el.innerHTML=`글자 높이 <strong>${h}cm</strong> → <strong>${row.각}각</strong> 적용 · 원가 ${fmt(cu)}원 · 견적 <strong>${fmt(su)}원</strong>/개`;
-  setResult(cu*qty,su*qty,qty,`LED채널글자 ${row.각}각 (H:${h}cm) × ${qty}개`);
+  const priceInput=document.getElementById('chSellUnit');
+  priceInput.placeholder=fmt(su)+'원 (기준 단가)';
+  const edited=priceInput.value.trim()!=='';
+  const selling=edited?Number(priceInput.value):su;
+  if(!Number.isSafeInteger(selling)||selling<0){cp={};resetResult();el.textContent='소비자 견적 단가는 0 이상의 정수로 입력하세요.';return;}
+  if(edited)el.innerHTML+=' · 적용 단가 <strong>'+fmt(selling)+'원</strong>/개 (직접 입력)';
+  setResult(cu*qty,selling*qty,qty,`LED채널글자 ${row.각}각 (H:${h}cm) × ${qty}개`);
   // 세로 입력시 규격 항상 자동 업데이트
   document.getElementById('iSpec').value=`H:${h}cm`;
   document.getElementById('iName').value='LED채널글자';
@@ -632,7 +642,12 @@ function calcFix(){
   if(si===null)return;
   const m=mats[si];
   const qty=parseInt(document.getElementById('fixQty').value)||1;
-  setResult(m.cFix*qty,m.sFix*qty,qty,`트러스바 × ${qty}개`);
+  const mm=Number(document.getElementById('fixLen').value);
+  if(!Number.isFinite(mm)||mm<=0){cp={};resetResult();return;}
+  const meters=mm/1000;
+  setResult(m.cFix*meters*qty,m.sFix*meters*qty,qty,`트러스바 ${mm}mm (${meters}m) × ${qty}개`);
+  document.getElementById('iSpec').value=mm+'mm';
+  document.getElementById('iName').value='트러스바';
 }
 function pickCrane(idx){
   craneIdx=idx;
@@ -766,9 +781,9 @@ function updSum(){
   Object.entries({sC:fmt(tc)+'원',sSup:fmt(t.sup)+'원',sV:fmt(t.vat)+'원',sG:fmt(t.grand)+'원',sPct:(sales?Math.round((sales-cost)/sales*100):0)+'%'}).forEach(([id,value])=>document.getElementById(id).textContent=value);
 }
 function documentRow(it,internal=false){
-  if(isSpacer(it))return `<tr class="${it.kind==='note'?'section-row':'blank-row'}"><td class="left">${esc(it.name)}</td>${'<td></td>'.repeat(6)}</tr>`;
-  if(internal)return `<tr><td class="left">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.ct)}</td><td>${it.isLabor?'내부용':it.isCrane?'—':it.pp+'%'}</td><td class="right">${fmt(it.fin)}</td><td>${esc(it.memo||'')}</td></tr>`;
-  return `<tr><td class="left">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.unitPrice??it.fin/it.qty)}</td><td class="right">${fmt(it.fin)}</td><td class="right">${fmt(rowTax(it))}</td><td>${esc(it.memo||'')}</td></tr>`;
+  if(isSpacer(it))return `<tr class="${it.kind==='note'?'section-row':'blank-row'}"><td class="item-name">${esc(it.name)}</td>${'<td></td>'.repeat(6)}</tr>`;
+  if(internal)return `<tr><td class="item-name">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.ct)}</td><td>${it.isLabor?'내부용':it.isCrane?'—':it.pp+'%'}</td><td class="right">${fmt(it.fin)}</td><td>${esc(it.memo||'')}</td></tr>`;
+  return `<tr><td class="item-name">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.unitPrice??it.fin/it.qty)}</td><td class="right">${fmt(it.fin)}</td><td class="right">${fmt(rowTax(it))}</td><td>${esc(it.memo||'')}</td></tr>`;
 }
 function renderInt(){
   const t=quoteTotals();document.getElementById('dInt').innerHTML=`<div class="qdoc-wrap"><h1>내부 원가 견적서</h1><p class="internal-warning">원가 포함 내부 자료 · 외부 배포 금지</p><table class="items-table"><thead><tr>${['품명','규격','수량','원가','이익률','견적가','비고'].map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${items.map(it=>documentRow(it,true)).join('')}</tbody></table><p>원가 합계 ${fmt(items.reduce((s,i)=>s+i.ct,0))}원 · 소비자 공급가액 ${fmt(t.sup)}원 · 세액 ${fmt(t.vat)}원</p><p>절삭 ${fmt(t.discount)}원 · 최종 합계 ${fmt(t.grand)}원</p></div>`;
@@ -937,8 +952,8 @@ function epForm(m,i){
     <div><label>견적가/헤베</label><input type="number" id="es${i}" value="${m.sSqm}"></div>
   </div><button class="sbtn" onclick="savM(${i})">저장</button>`;
   if(m.type==='fix') return `<div class="g2" style="margin-bottom:8px">
-    <div><label>원가/개</label><input type="number" id="em${i}" value="${m.cFix}"></div>
-    <div><label>견적가/개</label><input type="number" id="es${i}" value="${m.sFix}"></div>
+    <div><label>원가/m</label><input type="number" id="em${i}" value="${m.cFix}"></div>
+    <div><label>견적가/m</label><input type="number" id="es${i}" value="${m.sFix}"></div>
   </div><button class="sbtn" onclick="savM(${i})">저장</button>`;
   if(m.type==='galva') return `<div class="g2" style="margin-bottom:6px">
     <div><label>고정 원가</label><input type="number" id="em${i}" value="${m.cFix}"></div>
@@ -1017,7 +1032,7 @@ function quickParse(m,detail){
       if(m.type==='gomu'){const index=m.tbl.findIndex(row=>Number(row.size)===mm);if(index<0)throw Error('등록된 고무스카시 규격이 아닙니다. 아래 규격 버튼을 확인하세요.');values.sizeIndex=index;}
       else values[m.type==='ch'?'chH':'barL']=m.type==='ch'?mm/10:mm;
     }
-  }else if(m.type==='fix'){values.fixQty=qty;if(rest)throw Error('트러스바는 트러스바 2개처럼 입력하세요.');}
+  }else if(m.type==='fix'){values.fixQty=qty;if(rest){const r=rest.match(scalar);if(!r)throw Error('트러스바 3500mm 2개처럼 입력하세요.');values.fixLen=length(r[1],r[2],1);}}
   else {if(rest)throw Error('이 재료는 이름으로 선택한 뒤 종류 또는 단가를 선택하세요.');values[m.type==='crane'?'craneQty':'laborQty']=qty;}
   if(Object.entries(values).some(([k,v])=>k!=='sizeIndex'&&(!Number.isFinite(v)||v<=0)))throw Error('규격과 수량은 0보다 큰 숫자로 입력하세요.');
   return values;
@@ -1026,7 +1041,7 @@ function quickChoose(idx){
   const m=mats[idx];let values;
   try{values=quickParse(m,quickParts(quickInput.value).detail);}catch(e){document.getElementById('quickStatus').textContent=e.message;return;}
   // Reset default inputs so a new quick entry never inherits a previous quantity.
-  const defaults={dimW:1000,dimH:500,dimQty:1,chH:30,chQty:1,barL:1000,barQty:1,gomuQty:1,fixQty:1,craneQty:1,craneHrs:1,laborQty:1};
+  const defaults={dimW:1000,dimH:500,dimQty:1,chH:30,chQty:1,barL:1000,barQty:1,gomuQty:1,fixLen:1000,fixQty:1,craneQty:1,craneHrs:1,laborQty:1};
   Object.entries({...defaults,...values}).forEach(([id,v])=>{if(id!=='sizeIndex')document.getElementById(id).value=v;});
   selMat(idx);if(values.sizeIndex!==undefined)pickSz(values.sizeIndex);
   quickInput.value='';
