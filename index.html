@@ -134,6 +134,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
 
 .blank-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.blank-toolbar input{width:80px;text-align:center}.blank-toolbar button,#consumerBlankRows button{border:1px solid #ced8e3;border-radius:7px;background:#fff;padding:8px 12px;cursor:pointer;color:#23486a}.blank-edit-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e5e7eb}.blank-edit-row>span{overflow-wrap:anywhere;min-width:0}.blank-edit-row>div{display:flex;gap:6px;flex-shrink:0}#consumerBlankRows{margin-top:12px}details summary{cursor:pointer;padding:8px 0}@media(max-width:620px){.blank-edit-row{align-items:flex-start;flex-direction:column}.blank-toolbar{gap:6px}.blank-toolbar button{padding:8px 10px}}
 .qdoc .items-table td.item-name{text-align:center}
+.qdoc td[contenteditable]{cursor:text;transition:background .12s}.qdoc td[contenteditable]:hover{background:#f0f7ff}.qdoc td[contenteditable]:focus{background:#eaf3ff;outline:2px solid #185fa5;outline-offset:-2px}.qdoc td[contenteditable]{white-space:pre-wrap}@media print{.qdoc td[contenteditable],.qdoc td[contenteditable]:focus{background:transparent!important;outline:none!important}}
 </style>
 </head>
 <body>
@@ -338,20 +339,6 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
         <div><label>절삭 금액 (최종 합계에서 차감)</label><input type="number" id="cliDisc" min="0" step="1" value="0" oninput="renderCon();updSum();renderInt()"></div>
       </div>
     </div>
-    <section class="card no-print" aria-label="소비자 견적 항목 수정">
-      <div class="sec">견적 항목 수정</div><p class="editor-help">아래 항목의 ‘수정’을 누르면 품명·규격·수량·단가·비고를 바꿀 수 있습니다. 저장하면 견적서와 합계에 함께 반영됩니다.</p>
-      <div id="consumerEditList"></div>
-      <form id="consumerEditForm" hidden onsubmit="saveConsumerEdit(event)">
-        <h3 style="margin:16px 0">항목 수정</h3><div class="row-fields">
-        <div><label for="conEditName">품명</label><input id="conEditName" required maxlength="160"></div>
-        <div><label for="conEditSpec">규격</label><input id="conEditSpec" maxlength="160"></div>
-        <div><label for="conEditQty">수량</label><input id="conEditQty" type="number" min="0.001" step="any" required oninput="consumerEditEstimate()"></div>
-        <div><label for="conEditUnit">판매 단가 (부가세 별도)</label><input id="conEditUnit" type="number" min="0" step="any" required oninput="consumerEditEstimate()"></div>
-        <div><label for="conEditMemo">비고</label><input id="conEditMemo" maxlength="160"></div></div>
-        <p id="consumerEditEstimate" class="editor-help" aria-live="polite"></p>
-        <div class="row-toolbar"><button type="submit" class="primary">견적 수정 저장</button><button type="button" onclick="cancelConsumerEdit()">수정 취소</button></div>
-      </form><p id="consumerEditStatus" class="editor-help" role="status"></p>
-    </section>
     <section class="card no-print" aria-label="소비자 견적서 빈 행 조절">
       <div class="sec">빈 행 조절</div>
       <label for="bottomBlankInput">견적서 아래쪽 빈 행 수</label>
@@ -364,7 +351,7 @@ label,.sec,.sl,.rl{font-size:13px;color:#586477}
         <div style="font-size:16px;font-weight:700">소비자 견적서</div>
         <button class="pbtn" onclick="window.print()">🖨 인쇄 / PDF</button>
       </div>
-      <div id="dCon" class="qdoc"></div>
+      <p class="editor-help no-print">표의 품명·규격·수량·단가·공급가액·비고 칸을 눌러 수정하세요. Enter 또는 다른 칸 클릭으로 적용됩니다. 세액과 합계는 자동 계산됩니다.</p><p id="inlineEditStatus" class="editor-help no-print" role="status"></p><div id="dCon" class="qdoc"></div>
     </div>
   </div>
 
@@ -794,10 +781,48 @@ function updSum(){
   const sales=nc.reduce((s,i)=>s+i.fin,0),cost=nc.reduce((s,i)=>s+i.ct,0);
   Object.entries({sC:fmt(tc)+'원',sSup:fmt(t.sup)+'원',sV:fmt(t.vat)+'원',sG:fmt(t.grand)+'원',sPct:(sales?Math.round((sales-cost)/sales*100):0)+'%'}).forEach(([id,value])=>document.getElementById(id).textContent=value);
 }
+function inlineCell(it,field,value,label,cls=''){
+  return `<td class="${cls}" contenteditable="plaintext-only" role="textbox" tabindex="0" aria-label="${esc(it.name)} ${label}" data-row="${it.id}" data-field="${field}" onfocus="this.dataset.original=this.textContent" onblur="commitInline(this)" onkeydown="inlineKey(event,this)">${esc(value)}</td>`;
+}
+function applyInlineValue(id,field,text){
+  const it=items.find(it=>it.id===id&&!it.isLabor&&!isSpacer(it));if(!it)return false;
+  if(['name','spec','memo'].includes(field)){
+    const value=text.trim();if(field==='name'&&!value)throw Error('품명은 비워둘 수 없습니다.');
+    if(value.length>160)throw Error('글자는 160자 이내로 입력하세요.');it[field]=value;
+  }else{
+    const cleaned=text.trim().replace(/,/g,'');
+    if(!/^\d+(?:\.\d+)?$/.test(cleaned))throw Error('숫자로 입력하세요.');
+    const value=Number(cleaned);if(!Number.isFinite(value)||(field==='qty'&&value<=0))throw Error('수량은 0보다 크게 입력하세요.');
+    const unit=it.unitPrice??it.fin/it.qty;
+    const qty=field==='qty'?value:it.qty;
+    const fin=field==='fin'?Math.round(value):Math.round((field==='unit'?value:unit)*qty);
+    if(!Number.isSafeInteger(fin))throw Error('금액이 너무 큽니다.');
+    if(!['qty','unit','fin'].includes(field))return false;
+    Object.assign(it,{qty,fin,st:fin,unitPrice:field==='fin'?fin/qty:field==='unit'?value:unit,pp:fin?Math.round((fin-it.ct)/fin*100):0});
+  }
+  return true;
+}
+function commitInline(cell){
+  const value=cell.textContent;if(value===cell.dataset.original)return;
+  try{
+    if(!applyInlineValue(Number(cell.dataset.row),cell.dataset.field,value))return;
+    renderList();document.getElementById('inlineEditStatus').textContent='수정한 내용과 금액을 반영했습니다.';
+  }catch(error){cell.textContent=cell.dataset.original;document.getElementById('inlineEditStatus').textContent=error.message+' 기존 값을 유지합니다.';}
+}
+function inlineKey(event,cell){
+  if(event.isComposing||event.keyCode===229)return;
+  if(event.key==='Escape'){event.preventDefault();cell.textContent=cell.dataset.original;cell.blur();}
+  if(event.key==='Enter'){event.preventDefault();cell.blur();}
+  if(event.key==='Tab'){
+    const cells=Array.from(document.querySelectorAll('#dCon td[contenteditable]'));const next=cells[cells.indexOf(cell)+(event.shiftKey?-1:1)];
+    if(next){event.preventDefault();const id=next.dataset.row,field=next.dataset.field;cell.blur();document.querySelector(`#dCon td[data-row="${id}"][data-field="${field}"]`)?.focus();}
+  }
+}
+
 function documentRow(it,internal=false){
   if(isSpacer(it))return `<tr class="${it.kind==='note'?'section-row':'blank-row'}"><td class="item-name">${esc(it.name)}</td>${'<td></td>'.repeat(6)}</tr>`;
   if(internal)return `<tr><td class="item-name">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.ct)}</td><td>${it.isLabor?'내부용':it.isCrane?'—':it.pp+'%'}</td><td class="right">${fmt(it.fin)}</td><td>${esc(it.memo||'')}</td></tr>`;
-  return `<tr><td class="item-name">${esc(it.name)}</td><td>${esc(it.spec)}</td><td>${esc(it.qty)}</td><td class="right">${fmt(it.unitPrice??it.fin/it.qty)}</td><td class="right">${fmt(it.fin)}</td><td class="right">${fmt(rowTax(it))}</td><td>${esc(it.memo||'')}</td></tr>`;
+  return '<tr>'+inlineCell(it,'name',it.name,'품명','item-name')+inlineCell(it,'spec',it.spec,'규격')+inlineCell(it,'qty',it.qty,'수량')+inlineCell(it,'unit',fmt(it.unitPrice??it.fin/it.qty),'단가','right')+inlineCell(it,'fin',fmt(it.fin),'공급가액','right')+'<td class="right" title="공급가액의 10% 자동 계산">'+fmt(rowTax(it))+'</td>'+inlineCell(it,'memo',it.memo||'','비고')+'</tr>';
 }
 function renderInt(){
   const t=quoteTotals();document.getElementById('dInt').innerHTML=`<div class="qdoc-wrap"><h1>내부 원가 견적서</h1><p class="internal-warning">원가 포함 내부 자료 · 외부 배포 금지</p><table class="items-table"><thead><tr>${['품명','규격','수량','원가','이익률','견적가','비고'].map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${items.map(it=>documentRow(it,true)).join('')}</tbody></table><p>원가 합계 ${fmt(items.reduce((s,i)=>s+i.ct,0))}원 · 소비자 공급가액 ${fmt(t.sup)}원 · 세액 ${fmt(t.vat)}원</p><p>절삭 ${fmt(t.discount)}원 · 최종 합계 ${fmt(t.grand)}원</p></div>`;
@@ -825,32 +850,7 @@ function renderBlankControls(){
   document.getElementById('consumerBlankRows').innerHTML='<button type="button" onclick="insertConsumerBlank(null)">맨 위에 빈 행 추가</button>'+pub.map((it,index)=>`<div class="blank-edit-row"><span>${index+1}. ${it.kind==='blank'?'빈 행':esc(it.name)}</span><div><button type="button" onclick="insertConsumerBlank(${it.id})">아래에 빈 행</button>${it.kind==='blank'?`<button type="button" onclick="removeConsumerBlank(${it.id})">빈 행 삭제</button>`:''}</div></div>`).join('');
 }
 
-let consumerEditingId=null;
-function renderConsumerEditList(){
-  const pub=items.filter(it=>!it.isLabor&&!isSpacer(it));
-  document.getElementById('consumerEditList').innerHTML=pub.length?pub.map(it=>`<div class="blank-edit-row"><span><strong>${esc(it.name)}</strong><br><small>${esc(it.spec)} · ${esc(it.qty)}개 · 공급가액 ${fmt(it.fin)}원</small></span><button type="button" class="sbtn" onclick="openConsumerEdit(${it.id})">수정</button></div>`).join(''):'<p class="editor-help">견적 계산에서 항목을 추가하면 이곳에서 수정할 수 있습니다.</p>';
-}
-function openConsumerEdit(id){
-  const it=items.find(it=>it.id===id&&!it.isLabor&&!isSpacer(it));if(!it)return;
-  consumerEditingId=id;
-  Object.entries({conEditName:it.name,conEditSpec:it.spec||'',conEditQty:it.qty,conEditUnit:it.unitPrice??it.fin/it.qty,conEditMemo:it.memo||''}).forEach(([key,value])=>document.getElementById(key).value=value);
-  document.getElementById('consumerEditForm').hidden=false;document.getElementById('consumerEditStatus').textContent='';consumerEditEstimate();
-  document.getElementById('consumerEditForm').scrollIntoView({behavior:'smooth',block:'nearest'});document.getElementById('conEditUnit').focus();
-}
-function cancelConsumerEdit(){consumerEditingId=null;document.getElementById('consumerEditForm').hidden=true;}
-function consumerEditEstimate(){const qty=Number(document.getElementById('conEditQty').value),unit=Number(document.getElementById('conEditUnit').value);const amount=Math.round(qty*unit);document.getElementById('consumerEditEstimate').textContent=Number.isFinite(amount)&&qty>0&&unit>=0?'공급가액 '+fmt(amount)+'원 · 부가세 '+fmt(Math.round(amount*.1))+'원':'수량과 단가를 확인하세요.';}
-function saveConsumerEdit(event){
-  event.preventDefault();const it=items.find(it=>it.id===consumerEditingId&&!it.isLabor&&!isSpacer(it));
-  if(!it){cancelConsumerEdit();return;}
-  const name=document.getElementById('conEditName').value.trim(),qty=Number(document.getElementById('conEditQty').value),unit=Number(document.getElementById('conEditUnit').value);
-  if(!name||!Number.isFinite(qty)||qty<=0||!Number.isFinite(unit)||unit<0||!Number.isSafeInteger(Math.round(qty*unit))){document.getElementById('consumerEditStatus').textContent='품명과 0보다 큰 수량, 0 이상의 단가를 입력하세요.';return;}
-  const fin=qty===it.qty&&unit===(it.unitPrice??it.fin/it.qty)?it.fin:Math.round(qty*unit);
-  Object.assign(it,{name,spec:document.getElementById('conEditSpec').value.trim(),memo:document.getElementById('conEditMemo').value.trim(),qty,unitPrice:unit,st:fin,fin,pp:fin?Math.round((fin-it.ct)/fin*100):0});
-  cancelConsumerEdit();renderList();document.getElementById('consumerEditStatus').textContent='수정했습니다. 견적 목록과 견적서 합계에 반영되었습니다.';
-}
-
 function renderCon(){
-  renderConsumerEditList();
   renderBlankControls();
   const el=document.getElementById('dCon');
   const pubItems=items.filter(i=>!i.isLabor);
